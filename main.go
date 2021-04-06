@@ -2,22 +2,19 @@ package main
 
 import (
 	"challenge-golang-stone/src/config"
+	"challenge-golang-stone/src/router"
 	"fmt"
 	"log"
 	"net/http"
 )
-
-func helloWorld(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello world!"))
-}
 
 func init() {
 	config.Load()
 }
 
 func main() {
-	http.HandleFunc("/", helloWorld)
+	router := router.Generate()
 	port := config.Port
 	fmt.Printf("Api is running on port: %d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), router))
 }

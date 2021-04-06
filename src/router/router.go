@@ -1,8 +1,13 @@
 package router
 
-import "github.com/gorilla/mux"
+import (
+	"challenge-golang-stone/src/routes"
+
+	"github.com/gorilla/mux"
+)
 
 // Generate will return a router with configured routers
 func Generate() *mux.Router {
-	return mux.NewRouter()
+	r := mux.NewRouter()
+	return routes.Setup(r)
 }
