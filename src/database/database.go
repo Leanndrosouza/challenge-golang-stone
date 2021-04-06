@@ -3,6 +3,8 @@ package database
 import (
 	"challenge-golang-stone/src/config"
 	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql" // Driver
 )
 
 // Connect will return a db connection or an error
