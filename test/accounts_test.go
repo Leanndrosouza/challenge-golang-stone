@@ -113,8 +113,6 @@ type scenarioTest struct {
 }
 
 func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
-	clearTable()
-
 	db, err := database.Connect()
 	if err != nil {
 		t.Fatal(err)
@@ -138,9 +136,26 @@ func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
 			json:           []byte(`{"name":"Arthur Santos", "cpf": "777.970.100-05"}`),
 			statusExpected: http.StatusBadRequest,
 		},
+		{
+			json:           []byte(`{"name":" ", "cpf": "777.970.100-05", "secret": "123456"}`),
+			statusExpected: http.StatusBadRequest,
+		},
+		{
+			json:           []byte(`{"name":"Antonio Vieira ", "cpf": "777.666.444-33", "secret": "123456"}`),
+			statusExpected: http.StatusBadRequest,
+		},
+		{
+			json:           []byte(`{"name":"Rafael Almeida Souza", "cpf": "777.970.100-05", "secret": "123456"}`),
+			statusExpected: http.StatusCreated,
+		},
+		{
+			json:           []byte(`{"name":"Vinicius Rabelo", "cpf": "77797010005", "secret": "123456"}`),
+			statusExpected: http.StatusCreated,
+		},
 	}
 
 	for _, scenario := range scenarios {
+		clearTable()
 		req, _ := http.NewRequest(http.MethodPost, "/accounts", bytes.NewBuffer(scenario.json))
 		req.Header.Set("Content-Type", "application/json")
 
