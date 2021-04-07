@@ -15,7 +15,7 @@ type Account struct {
 	Name      string    `json:"name,omitempty"`
 	Cpf       string    `json:"cpf,omitempty"`
 	Secret    string    `json:"secret,omitempty"`
-	Balance   int       `json:"balance,omitempty"`
+	Balance   int       `json:"balance"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
