@@ -46,3 +46,26 @@ func (repository Transfers) GetByOriginID(originID uint64) ([]models.Transfer, e
 
 	return transfers, nil
 }
+
+// Transfer make a transfer between two accounts
+func (repository Transfers) Transfer(transfer models.Transfer) (uint64, error) {
+	statement, err := repository.db.Prepare(
+		"insert into transfers (account_origin_id, account_destination_id, amount) values (?,?,?)",
+	)
+	if err != nil {
+		return 0, err
+	}
+	defer statement.Close()
+
+	result, err := statement.Exec(transfer.AccountOriginID, transfer.AccountDestinationID, transfer.Amount)
+	if err != nil {
+		return 0, err
+	}
+
+	lastIDInserted, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(lastIDInserted), nil
+}
