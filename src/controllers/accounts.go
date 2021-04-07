@@ -38,6 +38,15 @@ func GetAccountBalance(w http.ResponseWriter, r *http.Request) {
 	repository := repositories.NewAccountRepository(db)
 	account, err := repository.SearchByID(accountID)
 
+	if err != nil {
+		if err.Error() == "Account not found" {
+			responses.Error(w, http.StatusNotFound, err)
+		} else {
+			responses.Error(w, http.StatusInternalServerError, err)
+		}
+		return
+	}
+
 	responses.JSON(w, http.StatusOK, map[string]int{
 		"balance": account.Balance,
 	})
