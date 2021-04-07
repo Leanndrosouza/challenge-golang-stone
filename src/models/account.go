@@ -20,19 +20,19 @@ type Account struct {
 }
 
 // Prepare format and validate account fields
-func (account *Account) Prepare() error {
-	if err := account.validate(); err != nil {
+func (account *Account) Prepare(step string) error {
+	if err := account.validate(step); err != nil {
 		return err
 	}
-	if err := account.format(); err != nil {
+	if err := account.format(step); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (account *Account) validate() error {
-	if strings.TrimSpace(account.Name) == "" {
+func (account *Account) validate(step string) error {
+	if step == "create" && strings.TrimSpace(account.Name) == "" {
 		return errors.New("Name is a required field")
 	}
 	if strings.TrimSpace(account.Cpf) == "" {
@@ -48,7 +48,7 @@ func (account *Account) validate() error {
 	return nil
 }
 
-func (account *Account) format() error {
+func (account *Account) format(step string) error {
 	account.Name = strings.TrimSpace(account.Name)
 	account.Cpf = strings.TrimSpace(account.Cpf)
 
@@ -59,13 +59,15 @@ func (account *Account) format() error {
 
 	account.Cpf = reg.ReplaceAllString(account.Cpf, "")
 
-	hashedSecret, err := security.Hash(account.Secret)
-	if err != nil {
-		return err
-	}
+	if step == "create" {
+		hashedSecret, err := security.Hash(account.Secret)
+		if err != nil {
+			return err
+		}
 
-	account.Secret = string(hashedSecret)
-	account.Balance = 0
+		account.Secret = string(hashedSecret)
+		account.Balance = 0
+	}
 
 	return nil
 }

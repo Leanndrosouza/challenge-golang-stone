@@ -83,7 +83,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := account.Prepare(); err != nil {
+	if err := account.Prepare("create"); err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
 		return
 	}
