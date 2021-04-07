@@ -21,14 +21,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var account models.Account
+	var login models.Login
 
-	if err = json.Unmarshal(body, &account); err != nil {
+	if err = json.Unmarshal(body, &login); err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := account.Prepare("login"); err != nil {
+	if err := login.Prepare(); err != nil {
 		responses.Error(w, http.StatusBadRequest, err)
 		return
 	}
@@ -41,7 +41,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repository := repositories.NewAccountRepository(db)
-	accountSaved, err := repository.SearchByCPF(account.Cpf)
+	accountSaved, err := repository.SearchByCPF(login.Cpf)
 
 	if err != nil {
 		if err.Error() == "Account not found" {
@@ -52,7 +52,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = security.VerifyPassword(accountSaved.Secret, account.Secret); err != nil {
+	if err = security.VerifyPassword(accountSaved.Secret, login.Secret); err != nil {
 		responses.Error(w, http.StatusUnauthorized, err)
 		return
 	}
