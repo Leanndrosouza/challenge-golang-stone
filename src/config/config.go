@@ -15,6 +15,9 @@ var (
 
 	// ConnectionString is a string to connect with database
 	ConnectionString = ""
+
+	// SecretKey is used to sign web token
+	SecretKey []byte
 )
 
 // Load will load env variables
@@ -35,4 +38,6 @@ func Load() {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 	)
+
+	SecretKey = []byte(os.Getenv("SECRET_KEY"))
 }
