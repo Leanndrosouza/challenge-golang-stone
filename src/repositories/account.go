@@ -99,3 +99,34 @@ func (repository Accounts) SearchByID(accountID uint64) (models.Account, error) 
 
 	return account, nil
 }
+
+// SearchByCPF returns a Account from database based on CPF
+func (repository Accounts) SearchByCPF(CPF string) (models.Account, error) {
+	rows, err := repository.db.Query(
+		"select id, name, cpf, secret, balance, created_at from accounts where cpf = ?",
+		CPF,
+	)
+	if err != nil {
+		return models.Account{}, err
+	}
+	defer rows.Close()
+
+	var account models.Account
+
+	if rows.Next() {
+		if err = rows.Scan(
+			&account.ID,
+			&account.Name,
+			&account.Cpf,
+			&account.Secret,
+			&account.Balance,
+			&account.CreatedAt,
+		); err != nil {
+			return models.Account{}, err
+		}
+	} else {
+		return models.Account{}, errors.New("Account not found")
+	}
+
+	return account, nil
+}
