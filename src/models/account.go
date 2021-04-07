@@ -21,10 +21,10 @@ type Account struct {
 
 // Prepare format and validate account fields
 func (account *Account) Prepare() error {
-	if err := account.format(); err != nil {
+	if err := account.validate(); err != nil {
 		return err
 	}
-	if err := account.validate(); err != nil {
+	if err := account.format(); err != nil {
 		return err
 	}
 
@@ -32,20 +32,17 @@ func (account *Account) Prepare() error {
 }
 
 func (account *Account) validate() error {
-	if account.Name == "" {
+	if strings.TrimSpace(account.Name) == "" {
 		return errors.New("Name is a required field")
 	}
-	if account.Cpf == "" {
+	if strings.TrimSpace(account.Cpf) == "" {
 		return errors.New("CPF is a required field")
 	}
 	if !validators.ValidateCPF(account.Cpf) {
 		return errors.New("CPF invalid")
 	}
-	if account.Secret == "" {
+	if strings.TrimSpace(account.Secret) == "" {
 		return errors.New("Secret is a required field")
-	}
-	if account.Balance != 0 {
-		return errors.New("Balance must init with 0")
 	}
 
 	return nil
