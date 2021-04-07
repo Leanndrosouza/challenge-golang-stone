@@ -16,6 +16,37 @@ func NewAccountRepository(db *sql.DB) *Accounts {
 	return &Accounts{db}
 }
 
+// GetAll return all accounts from database
+func (repository Accounts) GetAll() ([]models.Account, error) {
+	rows, err := repository.db.Query(
+		"select id, name, cpf, balance, created_at from accounts",
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var accounts []models.Account
+
+	for rows.Next() {
+		var account models.Account
+
+		if err = rows.Scan(
+			&account.ID,
+			&account.Name,
+			&account.Cpf,
+			&account.Balance,
+			&account.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, account)
+	}
+
+	return accounts, nil
+}
+
 // Create insert a user on database
 func (repository Accounts) Create(account models.Account) (uint64, error) {
 	statement, err := repository.db.Prepare(
@@ -42,7 +73,7 @@ func (repository Accounts) Create(account models.Account) (uint64, error) {
 // SearchByID returns a Account from database based on accountID
 func (repository Accounts) SearchByID(accountID uint64) (models.Account, error) {
 	rows, err := repository.db.Query(
-		"select id, name, cpf, secret, balance, created_at from accounts where id = ?",
+		"select id, name, cpf, balance, created_at from accounts where id = ?",
 		accountID,
 	)
 	if err != nil {
@@ -57,7 +88,6 @@ func (repository Accounts) SearchByID(accountID uint64) (models.Account, error) 
 			&account.ID,
 			&account.Name,
 			&account.Cpf,
-			&account.Secret,
 			&account.Balance,
 			&account.CreatedAt,
 		); err != nil {
