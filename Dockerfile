@@ -33,7 +33,8 @@ WORKDIR /root/
 
 # Copy the Pre-built binary file from the previous stage. Observe we also copied the .env file
 COPY --from=builder /app/main .
-COPY --from=builder /app/.env.docker .env     
+COPY --from=builder /app/.env.docker .env
+COPY --from=builder /app/.env.docker ./test/.env 
 
 # Expose port 8080 to the outside world
 EXPOSE 5000

@@ -22,9 +22,11 @@ services:
       - "8888:80"
     depends_on:
       - mysql
-  api:
-    container_name: challenge-golang-api
-    build: ./challenge-golang-stone
+  api-test:
+    container_name: challenge-golang-api-test
+    build: 
+      context: ./challenge-golang-stone
+      dockerfile: ./Dockerfile.test
     depends_on:
       - "mysql"
     ports:
