@@ -58,6 +58,7 @@ func (repository Accounts) SearchByID(accountID uint64) (models.Account, error) 
 			&account.Name,
 			&account.Cpf,
 			&account.Secret,
+			&account.Balance,
 			&account.CreatedAt,
 		); err != nil {
 			return models.Account{}, err
