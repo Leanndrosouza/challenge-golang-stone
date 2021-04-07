@@ -10,12 +10,12 @@ var transfersRoutes = []Route{
 		URI:        "/transfers",
 		Method:     http.MethodGet,
 		Function:   controllers.GetTransfers,
-		AuthNeeded: false,
+		AuthNeeded: true,
 	},
 	{
 		URI:        "/transfers",
 		Method:     http.MethodPost,
 		Function:   controllers.Transfer,
-		AuthNeeded: false,
+		AuthNeeded: true,
 	},
 }
