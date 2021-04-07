@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 type scenarioTest struct {
@@ -157,14 +158,15 @@ func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
 func TestGetAccountBalance(t *testing.T) {
 	clearTable()
 
+	rand.Seed(time.Now().UnixNano())
 	balance := rand.Intn(100000)
 
-	userID, err := insertUserWithBalance(balance)
+	accountID, err := insertUserWithBalance(balance)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d/balance", userID), nil)
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d/balance", accountID), nil)
 
 	response := executeRequest(req)
 	checkResponseCode(t, http.StatusOK, response.Code)
@@ -172,7 +174,7 @@ func TestGetAccountBalance(t *testing.T) {
 	var responseMap map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &responseMap)
 
-	if responseMap["balance"] != balance {
+	if responseMap["balance"] != float64(balance) {
 		t.Errorf("Expected account balance to be '%v'. Got '%v'", balance, responseMap["balance"])
 	}
 }
