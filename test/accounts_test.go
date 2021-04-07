@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-type scenarioTest struct {
+type scenarioCreateAccountTest struct {
 	json           []byte
 	statusExpected int
 }
@@ -110,7 +110,7 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
-	scenarios := []scenarioTest{
+	scenarios := []scenarioCreateAccountTest{
 		{
 			json:           []byte(`{}`),
 			statusExpected: http.StatusBadRequest,
@@ -155,31 +155,66 @@ func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
 	}
 }
 
+type scenarioGetBalanceTest struct {
+	balance         int
+	statusExpected  int
+	generateAccount bool
+	useInvalidParam bool
+}
+
 func TestGetAccountBalance(t *testing.T) {
-	clearTable()
-
 	rand.Seed(time.Now().UnixNano())
-	balance := rand.Intn(100000)
-
-	accountID, err := insertUserWithBalance(balance)
-	if err != nil {
-		t.Fatal(err)
+	scenarios := []scenarioGetBalanceTest{
+		{
+			statusExpected:  http.StatusNotFound,
+			generateAccount: false,
+		},
+		{
+			statusExpected:  http.StatusBadRequest,
+			generateAccount: false,
+			useInvalidParam: true,
+		},
+		{
+			balance:         rand.Intn(100000),
+			statusExpected:  http.StatusOK,
+			generateAccount: true,
+		},
 	}
 
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d/balance", accountID), nil)
+	for _, scenario := range scenarios {
+		clearTable()
 
-	response := executeRequest(req)
-	checkResponseCode(t, http.StatusOK, response.Code)
+		var accountID uint64
+		var err error
 
-	var responseMap map[string]interface{}
-	json.Unmarshal(response.Body.Bytes(), &responseMap)
+		if scenario.generateAccount {
+			accountID, err = insertAccountWithBalance(scenario.balance)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 
-	if responseMap["balance"] != float64(balance) {
-		t.Errorf("Expected account balance to be '%v'. Got '%v'", balance, responseMap["balance"])
+		var req *http.Request
+
+		if scenario.useInvalidParam {
+			req, _ = http.NewRequest(http.MethodGet, "/accounts/invalid_param/balance", nil)
+		} else {
+			req, _ = http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d/balance", accountID), nil)
+		}
+
+		response := executeRequest(req)
+		checkResponseCode(t, scenario.statusExpected, response.Code)
+
+		var responseMap map[string]interface{}
+		json.Unmarshal(response.Body.Bytes(), &responseMap)
+
+		if scenario.generateAccount && responseMap["balance"] != float64(scenario.balance) {
+			t.Errorf("Expected account balance to be '%v'. Got '%v'", scenario.balance, responseMap["balance"])
+		}
 	}
 }
 
-func insertUserWithBalance(balance int) (uint64, error) {
+func insertAccountWithBalance(balance int) (uint64, error) {
 	db, err := database.Connect()
 	if err != nil {
 		log.Fatal(err)
