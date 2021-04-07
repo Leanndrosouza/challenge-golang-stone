@@ -6,12 +6,19 @@ import (
 	"challenge-golang-stone/src/database"
 	"challenge-golang-stone/src/router"
 	"encoding/json"
+	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 )
+
+type scenarioTest struct {
+	json           []byte
+	statusExpected int
+}
 
 func TestMain(m *testing.M) {
 	config.Load()
@@ -101,11 +108,6 @@ func TestCreateAccount(t *testing.T) {
 	}
 }
 
-type scenarioTest struct {
-	json           []byte
-	statusExpected int
-}
-
 func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
 	scenarios := []scenarioTest{
 		{
@@ -153,5 +155,52 @@ func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
 }
 
 func TestGetAccountBalance(t *testing.T) {
+	clearTable()
 
+	balance := rand.Intn(100000)
+
+	userID, err := insertUserWithBalance(balance)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/accounts/%d/balance", userID), nil)
+
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var responseMap map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &responseMap)
+
+	if responseMap["balance"] != balance {
+		t.Errorf("Expected account balance to be '%v'. Got '%v'", balance, responseMap["balance"])
+	}
+}
+
+func insertUserWithBalance(balance int) (uint64, error) {
+	db, err := database.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	statement, err := db.Prepare(
+		"insert into accounts (name, cpf, secret, balance) values (?,?,?,?)",
+	)
+	if err != nil {
+		return 0, err
+	}
+	defer statement.Close()
+
+	result, err := statement.Exec("Test Name", "37474338041", "$2a$10$yyiI4gOSNtNeRYfx6mCYB.3zLqUHGdxx9ZwMr3NO5YMXXoxL9cucS", balance)
+	if err != nil {
+		return 0, err
+	}
+
+	lastIDInserted, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(lastIDInserted), nil
 }
