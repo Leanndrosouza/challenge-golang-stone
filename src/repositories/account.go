@@ -3,6 +3,7 @@ package repositories
 import (
 	"challenge-golang-stone/src/models"
 	"database/sql"
+	"errors"
 )
 
 // Accounts is a repository for accounts
@@ -36,4 +37,34 @@ func (repository Accounts) Create(account models.Account) (uint64, error) {
 	}
 
 	return uint64(lastIDInserted), nil
+}
+
+// SearchByID returns a Account from database based on accountID
+func (repository Accounts) SearchByID(accountID uint64) (models.Account, error) {
+	rows, err := repository.db.Query(
+		"select id, name, cpf, secret, balance, created_at from accounts where id = ?",
+		accountID,
+	)
+	if err != nil {
+		return models.Account{}, err
+	}
+	defer rows.Close()
+
+	var account models.Account
+
+	if rows.Next() {
+		if err = rows.Scan(
+			&account.ID,
+			&account.Name,
+			&account.Cpf,
+			&account.Secret,
+			&account.CreatedAt,
+		); err != nil {
+			return models.Account{}, err
+		}
+	} else {
+		return models.Account{}, errors.New("Account not found")
+	}
+
+	return account, nil
 }
