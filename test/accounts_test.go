@@ -76,12 +76,6 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 func TestCreateAccount(t *testing.T) {
 	clearTable()
 
-	db, err := database.Connect()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-
 	jsonStr := []byte(`{"name":"Arthur Santos", "cpf": "777.970.100-05", "secret": "123456"}`)
 	req, _ := http.NewRequest(http.MethodPost, "/accounts", bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
@@ -113,12 +107,6 @@ type scenarioTest struct {
 }
 
 func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
-	db, err := database.Connect()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-
 	scenarios := []scenarioTest{
 		{
 			json:           []byte(`{}`),
@@ -162,4 +150,8 @@ func TestCreateAccountScenariosWhenMustFail(t *testing.T) {
 		response := executeRequest(req)
 		checkResponseCode(t, scenario.statusExpected, response.Code)
 	}
+}
+
+func TestGetAccountBalance(t *testing.T) {
+
 }
