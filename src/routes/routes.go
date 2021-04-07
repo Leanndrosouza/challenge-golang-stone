@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"challenge-golang-stone/src/middlewares"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -21,7 +22,11 @@ func Setup(r *mux.Router) *mux.Router {
 	routes = append(routes, transfersRoutes...)
 
 	for _, route := range routes {
-		r.HandleFunc(route.URI, route.Function).Methods(route.Method)
+		if route.AuthNeeded {
+			r.HandleFunc(route.URI, middlewares.Authenticate(route.Function)).Methods(route.Method)
+		} else {
+			r.HandleFunc(route.URI, route.Function).Methods(route.Method)
+		}
 	}
 
 	return r
