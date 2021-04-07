@@ -8,6 +8,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 // GetAccounts return a list of accounts
@@ -17,7 +20,27 @@ func GetAccounts(w http.ResponseWriter, r *http.Request) {
 
 // GetAccountBalance return a account balance
 func GetAccountBalance(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
 
+	accountID, err := strconv.ParseUint(params["account_id"], 10, 64)
+	if err != nil {
+		responses.Error(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := database.Connect()
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repository := repositories.NewAccountRepository(db)
+	account, err := repository.SearchByID(accountID)
+
+	responses.JSON(w, http.StatusOK, map[string]int{
+		"balance": account.Balance,
+	})
 }
 
 // CreateAccount insert a new account on database
