@@ -15,7 +15,22 @@ import (
 
 // GetAccounts return a list of accounts
 func GetAccounts(w http.ResponseWriter, r *http.Request) {
+	db, err := database.Connect()
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
 
+	repository := repositories.NewAccountRepository(db)
+	accounts, err := repository.GetAll()
+
+	if err != nil {
+		responses.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, accounts)
 }
 
 // GetAccountBalance return a account balance
