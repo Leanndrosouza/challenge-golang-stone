@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"api/src/config"
+	"challenge-golang-stone/src/config"
 	"errors"
 	"fmt"
 	"net/http"
